@@ -233,6 +233,10 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
     staminaTimer = Timer.periodic(const Duration(seconds: 6), (_) {
       if (!isSleeping) {
         setState(() {
+          // 體力未滿時自動回復 1 點
+          if (stamina < 100) {
+            stamina = (stamina + 1).clamp(0, 100);
+          }
           stamina = (stamina - 5).clamp(0, 100);
           // 判斷是否該進入睡眠
           final now = DateTime.now();
