@@ -328,7 +328,6 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.brown[200],
       appBar: AppBar(
         title: const Text(
           '電子烏龜寵物',
@@ -336,160 +335,168 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
         ),
         backgroundColor: Colors.brown,
       ),
-      body: Column(
-        children: [
-          // 主體內容置中且不會壓到底部
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // 心情圖案固定在中間
-                Center(
-                  child: Icon(getMoodIcon(), color: getMoodColor(), size: 60),
-                ),
-                // 對話框固定在中間，與烏龜保持距離
-                AnimatedOpacity(
-                  opacity: (isSleeping || getHungerMessage() != null || currentNormalMessage != null && showNormalMessage) ? 1.0 : 0.0,
-                  duration: const Duration(seconds: 1),
-                  child: Builder(
-                    builder: (context) {
-                      if (isSleeping) {
-                        return Center(
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 40),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 6,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.bedtime, color: Colors.blue, size: 28),
-                                const SizedBox(width: 8),
-                                Text('我先睡覺，以恢復體力', style: TextStyle(fontSize: 18)),
-                              ],
-                            ),
-                          ),
-                        );
-                      } else if (getHungerMessage() != null) {
-                        return Center(
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 40), // 與烏龜距離
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 6,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(getHungerFace(), color: Colors.redAccent, size: 28),
-                                const SizedBox(width: 8),
-                                Text(getHungerMessage()!, style: TextStyle(fontSize: 18)),
-                              ],
-                            ),
-                          ),
-                        );
-                      } else if (currentNormalMessage != null) {
-                        return Center(
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 40),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 6,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.emoji_nature, color: Colors.green, size: 28),
-                                const SizedBox(width: 8),
-                                Text(currentNormalMessage!, style: TextStyle(fontSize: 18)),
-                              ],
-                            ),
-                          ),
-                        );
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    },
-                  ),
-                ),
-                // 烏龜圖片在下方
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeInOut,
-                  margin: EdgeInsets.only(left: position, top: 60), // top: 60 增加與對話框距離
-                  child: Image.asset(getTortoiseImage(), width: 200),
-                ),
-                const SizedBox(height: 16),
-                // 橫條圖顯示三個狀態（固定寬度，排列整齊）
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      _buildStatusBar('飢餓程度', hunger, Colors.red, Colors.red[100]!),
-                      const SizedBox(height: 8),
-                      _buildStatusBar('體力', stamina, Colors.blue, Colors.blue[100]!),
-                      const SizedBox(height: 8),
-                      _buildStatusBar('心情', mood, Colors.pink, Colors.pink[100]!),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/background.png'),
+            fit: BoxFit.cover,
           ),
-          // 下方資訊與按鈕固定在最下方
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+        ),
+        child: Column(
+          children: [
+            // 主體內容置中且不會壓到底部
+            Expanded(
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: isSleeping ? null : feed,
-                        icon: const Icon(Icons.restaurant),
-                        label: const Text('餵食'),
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton.icon(
-                        onPressed: isSleeping ? null : play,
-                        icon: const Icon(Icons.sports_handball),
-                        label: const Text('陪玩'),
-                      ),
-                    ],
+                  // 心情圖案固定在中間
+                  Center(
+                    child: Icon(getMoodIcon(), color: getMoodColor(), size: 60),
+                  ),
+                  // 對話框固定在中間，與烏龜保持距離
+                  AnimatedOpacity(
+                    opacity: (isSleeping || getHungerMessage() != null || currentNormalMessage != null && showNormalMessage) ? 1.0 : 0.0,
+                    duration: const Duration(seconds: 1),
+                    child: Builder(
+                      builder: (context) {
+                        if (isSleeping) {
+                          return Center(
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 40),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.bedtime, color: Colors.blue, size: 28),
+                                  const SizedBox(width: 8),
+                                  Text('我先睡覺，以恢復體力', style: TextStyle(fontSize: 18, color: Colors.black)),
+                                ],
+                              ),
+                            ),
+                          );
+                        } else if (getHungerMessage() != null) {
+                          return Center(
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 40), // 與烏龜距離
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(getHungerFace(), color: Colors.redAccent, size: 28),
+                                  const SizedBox(width: 8),
+                                  Text(getHungerMessage()!, style: TextStyle(fontSize: 18, color: Colors.black)),
+                                ],
+                              ),
+                            ),
+                          );
+                        } else if (currentNormalMessage != null) {
+                          return Center(
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 40),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.emoji_nature, color: Colors.green, size: 28),
+                                  const SizedBox(width: 8),
+                                  Text(currentNormalMessage!, style: TextStyle(fontSize: 18, color: Colors.black)),
+                                ],
+                              ),
+                            ),
+                          );
+                        } else {
+                          return const SizedBox.shrink();
+                        }
+                      },
+                    ),
+                  ),
+                  // 烏龜圖片在下方
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeInOut,
+                    margin: EdgeInsets.only(left: position, top: 60), // top: 60 增加與對話框距離
+                    child: Image.asset(getTortoiseImage(), width: 200),
+                  ),
+                  const SizedBox(height: 16),
+                  // 橫條圖顯示三個狀態（固定寬度，排列整齊）
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildStatusBar('飢餓程度', hunger, Colors.red, Colors.red[100]!),
+                        const SizedBox(height: 8),
+                        _buildStatusBar('體力', stamina, Colors.blue, Colors.blue[100]!),
+                        const SizedBox(height: 8),
+                        _buildStatusBar('心情', mood, Colors.pink, Colors.pink[100]!),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            // 下方資訊與按鈕固定在最下方
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: isSleeping ? null : feed,
+                          icon: const Icon(Icons.restaurant),
+                          label: const Text('餵食', style: TextStyle(color: Colors.white)),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton.icon(
+                          onPressed: isSleeping ? null : play,
+                          icon: const Icon(Icons.sports_handball),
+                          label: const Text('陪玩', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -498,7 +505,7 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 16)),
+        Text(label, style: const TextStyle(fontSize: 16, color: Colors.white)),
         SizedBox(
           width: 300, // 固定寬度
           child: Stack(
