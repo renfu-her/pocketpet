@@ -330,7 +330,10 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
     return Scaffold(
       backgroundColor: Colors.brown[200],
       appBar: AppBar(
-        title: const Text('電子烏龜寵物'),
+        title: const Text(
+          '電子烏龜寵物',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.brown,
       ),
       body: Column(
