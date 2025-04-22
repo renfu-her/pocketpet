@@ -112,6 +112,7 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
   }
 
   void moveRandomly() {
+    if (isSleeping) return; // 睡覺時不移動
     setState(() {
       final rand = Random();
       int moveDir = rand.nextInt(3); // 0:不動, 1:左, 2:右
@@ -334,78 +335,20 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
                   child: Image.asset(getTortoiseImage(), width: 200),
                 ),
                 const SizedBox(height: 16),
-                // 橫條圖顯示三個狀態
+                // 橫條圖顯示三個狀態（固定寬度，排列整齊）
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text('飢餓程度', style: TextStyle(fontSize: 16)),
-                      Stack(
-                        children: [
-                          Container(
-                            height: 18,
-                            decoration: BoxDecoration(
-                              color: Colors.red[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          Container(
-                            height: 18,
-                            width: (hunger / 100) * MediaQuery.of(context).size.width * 0.7,
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buildStatusBar('飢餓程度', hunger, Colors.red, Colors.red[100]!),
                       const SizedBox(height: 8),
-                      Text('體力', style: TextStyle(fontSize: 16)),
-                      Stack(
-                        children: [
-                          Container(
-                            height: 18,
-                            decoration: BoxDecoration(
-                              color: Colors.blue[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          Container(
-                            height: 18,
-                            width: (stamina / 100) * MediaQuery.of(context).size.width * 0.7,
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buildStatusBar('體力', stamina, Colors.blue, Colors.blue[100]!),
                       const SizedBox(height: 8),
-                      Text('心情', style: TextStyle(fontSize: 16)),
-                      Stack(
-                        children: [
-                          Container(
-                            height: 18,
-                            decoration: BoxDecoration(
-                              color: Colors.pink[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          Container(
-                            height: 18,
-                            width: (mood / 100) * MediaQuery.of(context).size.width * 0.7,
-                            decoration: BoxDecoration(
-                              color: Colors.pink,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ],
-                      ),
+                      _buildStatusBar('心情', mood, Colors.pink, Colors.pink[100]!),
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
               ],
             ),
           ),
@@ -438,6 +381,37 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatusBar(String label, int value, Color color, Color bgColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 16)),
+        SizedBox(
+          width: 300, // 固定寬度
+          child: Stack(
+            children: [
+              Container(
+                height: 18,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              Container(
+                height: 18,
+                width: 3.0 * value, // 0~300
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
