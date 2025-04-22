@@ -50,6 +50,21 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
   int minAwakeSec = 900; // 15分鐘
   int maxAwakeSec = 1500; // 25分鐘
 
+  final List<String> normalMessages = [
+    '我好慢～但好可愛！',
+    '今天也要努力爬！',
+    '我在思考龜生。',
+    '今天也要冒險！',
+    '慢慢來比較快～',
+    '龜龜出動！',
+  ];
+  String? lastNormalMessage;
+
+  Timer? normalMsgTimer;
+  Timer? normalMsgDelayTimer;
+  String? currentNormalMessage;
+  bool showNormalMessage = true;
+
   @override
   void initState() {
     super.initState();
@@ -62,7 +77,8 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
       startMoving();
       startStatusTimer();
       startHungerTimer();
-      startStaminaTimer(); // 啟動體力計時器
+      startStaminaTimer();
+      startNormalMsgTimer();
     });
   }
 
@@ -132,6 +148,9 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
     if (isSleeping) {
       return 'assets/images/tortoise-sleep.png';
     }
+    if (hunger >= 70) {
+      return 'assets/images/tortoise-angry.png';
+    }
     switch (direction) {
       case 1:
         return 'assets/images/tortoise-left.png';
@@ -178,6 +197,18 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
       return FontAwesomeIcons.faceFrown;
     }
     return FontAwesomeIcons.faceSmile;
+  }
+
+  String? getNormalMessage() {
+    if (isSleeping || getHungerMessage() != null) return null;
+    final rand = Random();
+    // 避免連續顯示同一句
+    String msg;
+    do {
+      msg = normalMessages[rand.nextInt(normalMessages.length)];
+    } while (msg == lastNormalMessage && normalMessages.length > 1);
+    lastNormalMessage = msg;
+    return msg;
   }
 
   void feed() {
@@ -245,6 +276,39 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
     });
   }
 
+  void startNormalMsgTimer() {
+    void scheduleNext() {
+      final rand = Random();
+      int next = 5 + rand.nextInt(2); // 5~6 秒
+      normalMsgTimer = Timer(Duration(seconds: next), () {
+        setState(() {
+          showNormalMessage = false;
+        });
+        int delay = 2 + rand.nextInt(4); // 2~5 秒
+        normalMsgDelayTimer = Timer(Duration(seconds: delay), () {
+          setState(() {
+            currentNormalMessage = pickNewNormalMessage();
+            showNormalMessage = true;
+          });
+          scheduleNext();
+        });
+      });
+    }
+    currentNormalMessage = pickNewNormalMessage();
+    showNormalMessage = true;
+    scheduleNext();
+  }
+
+  String pickNewNormalMessage() {
+    final rand = Random();
+    String msg;
+    do {
+      msg = normalMessages[rand.nextInt(normalMessages.length)];
+    } while (msg == lastNormalMessage && normalMessages.length > 1);
+    lastNormalMessage = msg;
+    return msg;
+  }
+
   @override
   void dispose() {
     timer.cancel();
@@ -252,6 +316,8 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
     hungerTimer?.cancel();
     staminaTimer?.cancel();
     sleepTimer?.cancel();
+    normalMsgTimer?.cancel();
+    normalMsgDelayTimer?.cancel();
     super.dispose();
   }
 
@@ -324,6 +390,36 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
                           const SizedBox(width: 8),
                           Text(getHungerMessage()!, style: TextStyle(fontSize: 18)),
                         ],
+                      ),
+                    ),
+                  )
+                else if (currentNormalMessage != null)
+                  Center(
+                    child: AnimatedOpacity(
+                      opacity: showNormalMessage ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 500),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 40),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.emoji_nature, color: Colors.green, size: 28),
+                            const SizedBox(width: 8),
+                            Text(currentNormalMessage!, style: TextStyle(fontSize: 18)),
+                          ],
+                        ),
                       ),
                     ),
                   ),
