@@ -26,8 +26,8 @@ class TortoiseHomePage extends StatefulWidget {
 
 class _TortoiseHomePageState extends State<TortoiseHomePage> {
   // 飢餓程度，會隨時間自動增加，範圍 1~100
-  int hunger = 50;
-  int mood = 50;
+  int hunger = 30; // 初始飢餓度 30%
+  int mood = 60;   // 初始心情 60%
   int interaction = 0;
 
   double position = 100; // 烏龜的 left 位置
@@ -38,7 +38,7 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
   final double minLeft = 20; // 左邊界
   double maxLeft = 200; // 右邊界，需根據螢幕寬度調整
   Timer? hungerTimer;
-  int stamina = 100; // 體力 1~100
+  int stamina = 60; // 初始體力 60%
   bool isSleeping = false;
   Timer? staminaTimer;
   Timer? sleepTimer;
@@ -65,6 +65,9 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
   String? currentNormalMessage;
   bool showNormalMessage = true;
 
+  Timer? awakeStatusTimer;
+  Timer? sleepScheduleTimer;
+
   @override
   void initState() {
     super.initState();
@@ -75,9 +78,8 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
         if (position > maxLeft) position = maxLeft;
       });
       startMoving();
-      startStatusTimer();
-      startHungerTimer();
-      startStaminaTimer();
+      startAwakeStatusTimer();
+      startSleepScheduler();
       startNormalMsgTimer();
     });
   }
@@ -102,28 +104,46 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
     });
   }
 
-  void startStatusTimer() {
+  void startAwakeStatusTimer() {
     void scheduleNext() {
       final rand = Random();
-      int next = 3 + rand.nextInt(3); // 3~5 秒
-      statusTimer = Timer(Duration(seconds: next), () {
-        updateMoodRandomly();
+      int next = 3 + rand.nextInt(4); // 3~6 秒
+      awakeStatusTimer = Timer(Duration(seconds: next), () {
+        if (!isSleeping) {
+          setState(() {
+            hunger = (hunger + (2 + rand.nextInt(3))).clamp(0, 100); // +2~4
+            stamina = (stamina + (1 + rand.nextInt(3))).clamp(0, 100); // +1~3
+            if (stamina > 100) stamina = 100;
+            mood = (mood - (2 + rand.nextInt(4))).clamp(0, 100); // -2~5
+          });
+        }
         scheduleNext();
       });
     }
     scheduleNext();
   }
 
-  void updateMoodRandomly() {
+  void startSleepScheduler() {
+    sleepScheduleTimer = Timer.periodic(const Duration(minutes: 15), (_) {
+      if (!isSleeping) startSleep();
+    });
+  }
+
+  void startSleep() {
     setState(() {
-      final rand = Random();
-      int moodChange = rand.nextInt(5) - 2; // -2~2
-      if (hunger > 90) {
-        moodChange = -(4 + rand.nextInt(5)); // -4~-8
-      } else if (hunger > 70) {
-        moodChange = -(2 + rand.nextInt(4)); // -2~-5
-      }
-      mood = (mood + moodChange).clamp(1, 100);
+      isSleeping = true;
+    });
+    sleepTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      setState(() {
+        final rand = Random();
+        stamina = (stamina + (2 + rand.nextInt(3))).clamp(0, 100); // +2~4
+        mood = (mood + (1 + rand.nextInt(3))).clamp(0, 100); // +1~3
+        hunger = (hunger + (2 + rand.nextInt(3))).clamp(0, 100); // +2~4
+        if (hunger >= 70 || stamina >= 100) {
+          isSleeping = false;
+          sleepTimer?.cancel();
+        }
+      });
     });
   }
 
@@ -223,21 +243,24 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
   void play() {
     if (isSleeping) return; // 睡覺時不能互動
     setState(() {
-      mood = (mood + 12).clamp(1, 100); // 陪玩時心情上升更多
-      stamina = (stamina - 10).clamp(0, 100); // 陪玩消耗體力
+      final rand = Random();
+      stamina = (stamina - (2 + rand.nextInt(3))).clamp(0, 100); // -2~4
+      mood = (mood + (2 + rand.nextInt(3))).clamp(0, 100); // +2~4
       interaction += 1;
     });
   }
 
   void startStaminaTimer() {
-    staminaTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+    staminaTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       if (!isSleeping) {
+        
         setState(() {
-          // 體力未滿時自動回復 1 點
+          // 體力未滿時自動回復 2~6 點
           if (stamina < 100) {
-            stamina = (stamina + 1).clamp(0, 100);
+            final rand = Random();
+            stamina = (stamina + (2 + rand.nextInt(5))).clamp(1, 100); // +2~6
           }
-          stamina = (stamina - 5).clamp(0, 100);
+          stamina = (stamina - 5).clamp(1, 100);
           // 判斷是否該進入睡眠
           final now = DateTime.now();
           if (stamina <= 30 &&
@@ -251,32 +274,6 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
           }
         });
       }
-    });
-  }
-
-  void startSleep() {
-    sleepTimer = Timer.periodic(const Duration(seconds: 6), (_) {
-      setState(() {
-        // 睡覺時回復體力、心情
-        final rand = Random();
-        stamina = (stamina + (2 + rand.nextInt(5))).clamp(0, 100); // +2~6
-        mood = (mood + (2 + rand.nextInt(5))).clamp(1, 100); // +2~6
-        // 飢餓照常增加（由 hungerTimer 控制）
-        // 判斷是否該醒來
-        final now = DateTime.now();
-        bool sleepTimeUp = sleepStartTime != null && now.difference(sleepStartTime!).inSeconds >= sleepDurationSec;
-        bool hungerWake = hunger > 60;
-        bool staminaFull = stamina >= 100;
-        if (isSleeping && timer.isActive) {
-          timer.cancel(); // 睡覺時停止移動
-        }
-        if (sleepTimeUp || hungerWake || staminaFull) {
-          isSleeping = false;
-          lastSleepEndTime = now;
-          sleepTimer?.cancel();
-          startMoving(); // 醒來時恢復移動
-        }
-      });
     });
   }
 
@@ -316,7 +313,8 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
   @override
   void dispose() {
     timer.cancel();
-    statusTimer?.cancel();
+    awakeStatusTimer?.cancel();
+    sleepScheduleTimer?.cancel();
     hungerTimer?.cancel();
     staminaTimer?.cancel();
     sleepTimer?.cancel();
@@ -447,7 +445,7 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 500),
                     curve: Curves.easeInOut,
-                    margin: EdgeInsets.only(left: position, top: 60), // top: 60 增加與對話框距離
+                    margin: EdgeInsets.only(left: position < 0 ? 0 : position, top: 60), // top: 60 增加與對話框距離
                     child: Image.asset(getTortoiseImage(), width: 200),
                   ),
                   const SizedBox(height: 16),
@@ -481,13 +479,13 @@ class _TortoiseHomePageState extends State<TortoiseHomePage> {
                         ElevatedButton.icon(
                           onPressed: isSleeping ? null : feed,
                           icon: const Icon(Icons.restaurant),
-                          label: const Text('餵食', style: TextStyle(color: Colors.white)),
+                          label: const Text('餵食', style: TextStyle(color: Colors.black)),
                         ),
                         const SizedBox(width: 10),
                         ElevatedButton.icon(
                           onPressed: isSleeping ? null : play,
                           icon: const Icon(Icons.sports_handball),
-                          label: const Text('陪玩', style: TextStyle(color: Colors.white)),
+                          label: const Text('陪玩', style: TextStyle(color: Colors.black)),
                         ),
                       ],
                     ),
