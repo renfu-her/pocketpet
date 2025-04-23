@@ -26,15 +26,24 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0.1"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("release.keystore") // 你的 keystore 檔案
+            storePassword = "hezrid5"
+            keyAlias = "pocketpet_key"
+            keyPassword = "hezrid5"
+        }
     }
 
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
